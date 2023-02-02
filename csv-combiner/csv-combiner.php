@@ -18,7 +18,7 @@ for ($i = 1; $i < $argc; $i++) {
     $fileNames[] = $explodedFileName[count($explodedFileName)-1];
 }
 
-# Read/Write each CSV file into an array
+# Read/Translate each row of each CSV file
 # Note: 
 
 # Note: had to copy full path due to some errors - change as necessary
@@ -37,6 +37,7 @@ foreach ($fileNames as $fName) {
     $i = 0;
     # Note: declared tempHeaders here since it is used in an if-else branch 
     $tempHeaders = [];
+    # Row iteration
     while (($row = fgetcsv($f)) !== false) {
         $fileContents[$fName][] = $row;
         
@@ -49,10 +50,13 @@ foreach ($fileNames as $fName) {
             # Create/Translate row data
             $combinedCSV['filename'][] = $fName;
 
+            # Iterate through indexed data to find assoc. column header
             foreach ($row as $index => $value) {
+                # if col. header exists
                 if (in_array($tempHeaders[$index], array_keys($combinedCSV))) {
                     $combinedCSV[$tempHeaders[$index]][] = $value;
                 }
+                # if col. header does NOT exist
                 else {
                     $nils = 0;
                     while ($nils < $rowCount) {
@@ -61,7 +65,7 @@ foreach ($fileNames as $fName) {
                     }
                     $combinedCSV[$tempHeaders[$index]][] = $value;
                 }
-                #Find leftover columns to add to
+                # Find leftover columns to add NIL value to
                 foreach ($headers as $h) {
                     if (! in_array($h, $tempHeaders)) {
                         $combinedCSV[$h][] = "NIL";
